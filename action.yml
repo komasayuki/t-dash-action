@@ -1,0 +1,29 @@
+name: 'T-DASH Test Action'
+description: 'Test by T-DASH on Windows'
+inputs:
+  sync-path:
+    description: 'Path to sync folder that T-DASH exported'
+    required: true
+  test-run-name:
+    description: 'Test run name'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Chrome (Test browser)
+      uses: browser-actions/setup-chrome@v1.2.0
+      with:
+        chrome-version: latest
+
+    - name: Test
+      run: |
+        mkdir .tdash && curl https://cats.from.tv/tdashbeta.zip -o .tdash/tdash.zip && unzip .tdash/tdash.zip -d .tdash
+        .tdash/tdashbeta.exe setup --silent
+        .tdash/tdashbeta.exe testrun ${{ inputs.test-run-name }} --background --sync ${{ inputs.sync-path }}
+      shell: bash
+
+    - uses: actions/upload-artifact@v3
+      with:
+        name: test result
+        path: projects\commandlinetestrun\reports
